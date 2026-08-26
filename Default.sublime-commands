@@ -1,0 +1,24 @@
+[
+    {
+        "caption": "Oxlint: Fix This File",
+        "command": "oxlint_fix"
+    },
+    {
+        "caption": "Oxlint: Fix This File (with suggestions)",
+        "command": "oxlint_fix",
+        "args": {
+            "mode": "suggestions"
+        }
+    },
+    {
+        "caption": "Oxlint: Fix This File (dangerously)",
+        "command": "oxlint_fix",
+        "args": {
+            "mode": "dangerously"
+        }
+    },
+    {
+        "caption": "Oxfmt: Format This File",
+        "command": "oxfmt_format"
+    }
+]

@@ -1,0 +1,19 @@
+SublimeLinter-oxlint
+--------------------
+
+This plugin requires `oxlint` to be installed.  The recommended way is as a
+project dev dependency, which is picked up automatically:
+
+    npm install --save-dev oxlint
+
+A global install (`npm install -g oxlint`, `brew install oxlint`) also works,
+as long as the binary is on the PATH that Sublime Text sees.
+
+Optionally, `oxfmt` is used for formatting if you install it too:
+
+    npm install --save-dev oxfmt
+
+Note: oxlint has no stdin mode, so this plugin lints the file on disk.  You
+will only see results after saving.
+
+Read more: https://github.com/IPWright83/SublimeLinter-oxlint
