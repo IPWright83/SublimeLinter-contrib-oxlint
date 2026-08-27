@@ -26,6 +26,9 @@ logger = logging.getLogger('SublimeLinter.plugin.oxlint')
 # "typescript(no-explicit-any)".  We surface just the rule name as the `code`.
 CODE_RE = re.compile(r'^(?P<plugin>[^(]+)\((?P<rule>.+)\)$')
 
+# Note: `fix.py` duplicates the default selector these build, because Sublime
+# Text may load it in another plugin host where it cannot import this module.
+# Keep `DEFAULT_SELECTOR` there in sync with these two.
 STANDARD_SELECTOR = (
     'source.js, source.jsx, source.mjs, source.cjs, '
     'source.ts, source.tsx, source.mts, source.cts'

@@ -44,6 +44,15 @@ DEBUG = True
 
 TIMEOUT = 30
 
+# The default `selector` from `linter.py`.  Duplicated deliberately: Sublime
+# Text may put that module in another plugin host, where we cannot import it.
+# Keep the two in sync.
+DEFAULT_SELECTOR = (
+    'source.js, source.jsx, source.mjs, source.cjs, '
+    'source.ts, source.tsx, source.mts, source.cts, '
+    'text.html.vue, source.astro, source.svelte'
+)
+
 # Buffer ids we are currently saving ourselves.
 _saving = set()
 
@@ -149,7 +158,24 @@ def lints_this_buffer(view):
     if persist is not None:
         return 'oxlint' in persist.assigned_linters.get(view.buffer_id(), set())
 
-    debug('SublimeLinter is in another plugin host; on-save handlers are off')
+    return matches_selector(view)
+
+
+def matches_selector(view):
+    """Does this view look like something oxlint lints?
+
+    The fallback for when SublimeLinter is in another plugin host and we cannot
+    ask it anything: match the same `selector` setting it would.  Coarser than
+    SublimeLinter -- `disable_if_not_dependency` is invisible from here, for
+    one -- but a missing oxlint is skipped anyway once we go looking for it.
+    """
+    oxlint_settings, _ = linter_settings()
+    selector = oxlint_settings.get('selector') or DEFAULT_SELECTOR
+
+    if view.find_by_selector(selector):
+        return True
+
+    debug('%s does not match the oxlint selector (%s)', view.file_name(), selector)
     return False
 
 
