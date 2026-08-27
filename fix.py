@@ -30,11 +30,11 @@ import sublime_plugin
 
 try:
     # Only used to tell whether SublimeLinter lints this buffer with oxlint.
-    # If we are in a foreign plugin host this import fails, and the on-save
-    # handlers stay off; the commands themselves never depend on it.
-    from SublimeLinter.lint import persist
+    # If we are in a foreign plugin host these imports fail, and the on-save
+    # handlers stay off; the commands themselves never depend on them.
+    from SublimeLinter.lint import elect, persist
 except ImportError:  # pragma: no cover
-    persist = None
+    elect = persist = None
 
 logger = logging.getLogger('SublimeLinter.plugin.oxlint')
 
@@ -119,10 +119,38 @@ def format_on_save_enabled():
 
 
 def lints_this_buffer(view):
-    """Has SublimeLinter assigned the oxlint linter to this buffer?"""
-    if persist is None:
-        return False
-    return 'oxlint' in persist.assigned_linters.get(view.buffer_id(), set())
+    """Does SublimeLinter lint this buffer with oxlint?
+
+    Asks `elect` which linters apply to the view right now.  Its
+    `assigned_linters` registry would be simpler, but that is only filled in
+    once a lint has actually completed for the buffer, so on the first save of
+    a session -- or any save that beats the lint -- it is empty and we would
+    wrongly skip.
+    """
+    if elect is not None:
+        try:
+            names = {
+                info.name
+                for info in elect.assignable_linters_for_view(view, 'on_save')
+            }
+        except Exception as err:
+            # A private API, so never let it break saving.
+            debug('could not ask SublimeLinter which linters apply: %s', err)
+        else:
+            if 'oxlint' in names:
+                return True
+
+            debug('oxlint does not apply to this view; SublimeLinter offers %s'
+                  ' and knows about %s',
+                  ', '.join(sorted(names)) or 'no linters here',
+                  ', '.join(sorted(persist.linter_classes)) if persist else '?')
+            return False
+
+    if persist is not None:
+        return 'oxlint' in persist.assigned_linters.get(view.buffer_id(), set())
+
+    debug('SublimeLinter is in another plugin host; on-save handlers are off')
+    return False
 
 
 def create_environment():
